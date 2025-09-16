@@ -1,12 +1,15 @@
 #pragma once
 
+// 어플리케이션 기능 총괄 매니저
 class CEngine
 {
 private:
-	HWND		m_hMainHwnd;
+	HWND		m_hMainWnd;
 	POINT		m_Resolution;
 
 public:
+	int init(HWND _hWnd, POINT _Resolution);
+
 	static  CEngine* GetInst()
 	{
 		static CEngine mgr;
