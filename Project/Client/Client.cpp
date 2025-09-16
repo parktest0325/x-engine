@@ -4,6 +4,15 @@
 #include "framework.h"
 #include "Client.h"
 
+#include <Engine/Test.h>
+
+#ifdef _DEBUG
+#pragma comment(lib, "Engine/Engine_d.lib")
+#else
+#pragma comment(lib, "Engine/Engine.lib")
+#endif
+
+
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 // Forward declarations of functions included in this code module:
@@ -16,6 +25,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    int test = Add(10, 20);
+
     MyRegisterClass(hInstance);
 
     hInst = hInstance; // Store instance handle in our global variable
