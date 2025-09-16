@@ -3,26 +3,16 @@
 class CEngine
 {
 private:
-	static CEngine* g_This;
+	HWND		m_hMainHwnd;
+	POINT		m_Resolution;
 
 public:
-	static CEngine* GetInst()
+	static  CEngine* GetInst()
 	{
-		if (g_This == nullptr) {
-			g_This = new CEngine;
-		}
-		return g_This;
+		static CEngine mgr;
+		return &mgr;
 	}
-
-	static void Destroy()
-	{
-		if (g_This != nullptr)
-		{
-			delete g_This;
-			g_This = nullptr;
-		}
-	}
-
 private:
 	CEngine();
+	CEngine(const CEngine& _origin) = delete;
 };

@@ -66,8 +66,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    CEngine::Destroy();
-
     return (int) msg.wParam;
 }
 
