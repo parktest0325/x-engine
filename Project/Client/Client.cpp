@@ -4,7 +4,7 @@
 #include "framework.h"
 #include "Client.h"
 
-#include <Engine/Test.h>
+#include <Engine/CEngine.h>
 
 #ifdef _DEBUG
 #pragma comment(lib, "Engine/Engine_d.lib")
@@ -25,7 +25,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    int test = Add(10, 20);
+    CEngine* pEngine = CEngine::GetInst();
 
     MyRegisterClass(hInstance);
 
@@ -65,6 +65,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         }
     }
+
+    CEngine::Destroy();
 
     return (int) msg.wParam;
 }
