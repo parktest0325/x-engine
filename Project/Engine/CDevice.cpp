@@ -4,27 +4,11 @@
 CDevice::CDevice()
 	: m_hMainWnd(nullptr)
 	, m_RenderResolution{}
-	, m_Device(nullptr)
-	, m_Context(nullptr)
-	, m_SwapChain(nullptr)
-	, m_RenderTargetTex(nullptr)
-	, m_RTV(nullptr)
-	, m_DepthStencilTex(nullptr)
-	, m_DSV(nullptr)
 {
-
 }
 
 CDevice::~CDevice()
 {
-	m_Device->Release();
-	m_Context->Release();
-	m_SwapChain->Release();
-
-	m_RenderTargetTex->Release();
-	m_RTV->Release();
-	m_DepthStencilTex->Release();
-	m_DSV->Release();
 }
 
 int CDevice::init(HWND _hWnd, POINT _Resolution)
@@ -40,20 +24,35 @@ int CDevice::init(HWND _hWnd, POINT _Resolution)
 
 	// D3D_DRIVER_TYPE_HARDWARE : DXD11 GPU로 사용할거다. 여기서 실패하면 CPU로 렌더링하게됨
 	// D3D11_CREATE_DEVICE_DEBUG : D3D11 사용하면서 디버그 로그 출력 
-	D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE,
-					nullptr, iFlag, nullptr, 0, D3D11_SDK_VERSION,
-					&m_Device, &level, &m_Context);
+	if (FAILED(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE,
+			nullptr, iFlag, nullptr, 0, D3D11_SDK_VERSION,
+			m_Device.GetAddressOf(), &level, m_Context.GetAddressOf())))
+		return E_FAIL;
 
 	if (FAILED(CreateSwapChain()))
-	{
 		return E_FAIL;
-	}
 	if (FAILED(CreateView()))
-	{
 		return E_FAIL;
-	}
+
+	// ViewPort 로 윈도우에 보여질 영역설정
+	D3D11_VIEWPORT viewport = {};
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = m_RenderResolution.x;
+	viewport.Height = m_RenderResolution.y;
+	viewport.MinDepth = 0;
+	viewport.MaxDepth = 1;
+
+	// ViewPort 정보 세팅
+	m_Context->RSSetViewports(1, &viewport);
 
 	return S_OK;
+}
+
+void CDevice::ClearTarget(float(&_ArrColor)[4])
+{
+	m_Context->ClearRenderTargetView(m_RTV.Get(), _ArrColor);
 }
 
 int CDevice::CreateSwapChain()
@@ -81,25 +80,16 @@ int CDevice::CreateSwapChain()
 	Desc.SampleDesc.Count = 1;
 	Desc.SampleDesc.Quality = 0;
 
-	IDXGIDevice* pDXGIDevice = nullptr;
-	IDXGIAdapter* pAdapter = nullptr;
-	IDXGIFactory* pFactory = nullptr;
+	ComPtr<IDXGIDevice> pDXGIDevice = nullptr;
+	ComPtr<IDXGIAdapter> pAdapter = nullptr;
+	ComPtr<IDXGIFactory> pFactory = nullptr;
 
-	m_Device->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice);
-	pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pAdapter);
-	pAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&pFactory);
+	m_Device->QueryInterface(__uuidof(IDXGIDevice), (void**)pDXGIDevice.GetAddressOf());
+	pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void**)pAdapter.GetAddressOf());
+	pAdapter->GetParent(__uuidof(IDXGIFactory), (void**)pFactory.GetAddressOf());
 
-	if (FAILED(pFactory->CreateSwapChain(m_Device, &Desc, &m_SwapChain)))
-	{
-		pDXGIDevice->Release();
-		pAdapter->Release();
-		pFactory->Release();
+	if (FAILED(pFactory->CreateSwapChain(m_Device.Get(), &Desc, m_SwapChain.GetAddressOf())))
 		return E_FAIL;
-	}
-
-	pDXGIDevice->Release();
-	pAdapter->Release();
-	pFactory->Release();
 
 	return S_OK;
 }
@@ -107,10 +97,10 @@ int CDevice::CreateSwapChain()
 int CDevice::CreateView()
 {
 	// 1. 스왑체인의 RenderTarget Texture(백버퍼)를 가져온다.
-	m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&m_RenderTargetTex);
+	m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)m_RenderTargetTex.GetAddressOf());
 
 	// 2. 사용하려면 RenderTargetView를 만들어야한다.
-	m_Device->CreateRenderTargetView(m_RenderTargetTex, nullptr, &m_RTV);
+	m_Device->CreateRenderTargetView(m_RenderTargetTex.Get(), nullptr, m_RTV.GetAddressOf());
 
 	// 3. DepthStencil용 Textrue 를 제작
 	D3D11_TEXTURE2D_DESC Desc = {};
@@ -126,13 +116,13 @@ int CDevice::CreateView()
 	Desc.SampleDesc.Quality = 0;
 	Desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-	m_Device->CreateTexture2D(&Desc, nullptr, &m_DepthStencilTex);
+	m_Device->CreateTexture2D(&Desc, nullptr, m_DepthStencilTex.GetAddressOf());
 
 	// 4. DepthStencilView 얻어오기
-	m_Device->CreateDepthStencilView(m_DepthStencilTex, nullptr, &m_DSV);
+	m_Device->CreateDepthStencilView(m_DepthStencilTex.Get(), nullptr, m_DSV.GetAddressOf());
 
 	// RenderTarget, DepthStencil 을 출력으로 지정
-	m_Context->OMSetRenderTargets(1, &m_RTV, m_DSV);
+	m_Context->OMSetRenderTargets(1, m_RTV.GetAddressOf(), m_DSV.Get());
 
 	return S_OK;
 }
