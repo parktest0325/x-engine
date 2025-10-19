@@ -11,13 +11,13 @@ private:
 	POINT					m_RenderResolution;
 
 	ID3D11Device*			m_Device;		// GPU 메모리 할당, Dx11 관련 객체(텍스쳐, 버퍼, 뷰 등) 생성 
-	ID3D11DeviceContext*	m_Context;		// 생성된 리소스로 GPU 렌더링 관련 그래픽스 명령
+	ID3D11DeviceContext*	m_Context;		// 생성된 리소스로 GPU 렌더링 관련 그래픽스 명령 기능
 
-	IDXGISwapChain*			m_SwapChain;	// 렌더 타겟 버퍼를 소유하면서 화면에 최종 장면을 게시
+	IDXGISwapChain*			m_SwapChain;	// 렌더 타겟 버퍼들을 소유하면서 화면에 최종 장면을 게시
 
 	ID3D11Texture2D*		m_RenderTargetTex;
 	ID3D11RenderTargetView* m_RTV;
-	ID3D10Texture2D*		m_DepthStencilTex;
+	ID3D11Texture2D*		m_DepthStencilTex;
 	ID3D11DepthStencilView* m_DSV;
 
 public:
@@ -28,6 +28,10 @@ public:
 	}
 
 	int init(HWND _hWnd, POINT _Resolution);
+
+private:
+	int CreateSwapChain();
+	int CreateView();
 
 private:
 	CDevice();
