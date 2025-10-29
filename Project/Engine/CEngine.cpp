@@ -3,10 +3,17 @@
 
 #include "CDevice.h"
 
+#include "Temp.h"
+
 CEngine::CEngine()
 	: m_hMainWnd(nullptr)
 	, m_Resolution{}
 {
+}
+
+CEngine::CEngine()
+{
+	TempRelease();
 }
 
 int CEngine::init(HWND _hWnd, POINT _Resolution)
@@ -27,17 +34,21 @@ int CEngine::init(HWND _hWnd, POINT _Resolution)
 		return E_FAIL;
 	}
 
+	TempInit();
+
 	return S_OK;
 }
 
 void CEngine::progress()
 {
 	// Level->tick();
+	TempTick();
 
 	// ClearRT
 	float ClearColor[4] = { 0.3f, 0.3f, 0.3f, 1.f };
 	CDevice::GetInst()->ClearTarget(ClearColor);
 
 	// Level->render();
+	TempRender();
 	CDevice::GetInst()->Present();
 }

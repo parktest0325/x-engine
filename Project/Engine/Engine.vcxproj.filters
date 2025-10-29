@@ -16,6 +16,12 @@
     <ClInclude Include="CDevice.h">
       <Filter>03. Device</Filter>
     </ClInclude>
+    <ClInclude Include="Temp.h">
+      <Filter>Default</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleMath.h">
+      <Filter>Module</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -29,6 +35,9 @@
     </ClCompile>
     <ClCompile Include="CDevice.cpp">
       <Filter>03. Device</Filter>
+    </ClCompile>
+    <ClCompile Include="Temp.cpp">
+      <Filter>Default</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,5 +53,13 @@
     <Filter Include="03. Device">
       <UniqueIdentifier>{bc90e376-55cb-4ccd-86cd-6121e4bfc5f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module">
+      <UniqueIdentifier>{6d7bdefd-0467-4d4c-9c7a-43c177c4b1bd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SimpleMath.inl">
+      <Filter>Module</Filter>
+    </None>
   </ItemGroup>
 </Project>
