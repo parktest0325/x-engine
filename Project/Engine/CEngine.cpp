@@ -11,7 +11,7 @@ CEngine::CEngine()
 {
 }
 
-CEngine::CEngine()
+CEngine::~CEngine()
 {
 	TempRelease();
 }
@@ -34,7 +34,11 @@ int CEngine::init(HWND _hWnd, POINT _Resolution)
 		return E_FAIL;
 	}
 
-	TempInit();
+	if (FAILED(TempInit()))
+	{
+		MessageBox(m_hMainWnd, L"Device 초기화 실패", L"TempInit 초기화 실패", MB_OK);
+		return E_FAIL;
+	}
 
 	return S_OK;
 }

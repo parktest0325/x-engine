@@ -19,4 +19,6 @@ public:
 private:
 	CEngine();
 	CEngine(const CEngine& _origin) = delete;
+public:
+	~CEngine();
 };

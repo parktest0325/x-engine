@@ -156,10 +156,12 @@ call Copy.bat</Command>
   <ItemGroup>
     <ClInclude Include="CDevice.h" />
     <ClInclude Include="CEngine.h" />
+    <ClInclude Include="define.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SimpleMath.h" />
+    <ClInclude Include="struct.h" />
     <ClInclude Include="Temp.h" />
   </ItemGroup>
   <ItemGroup>
