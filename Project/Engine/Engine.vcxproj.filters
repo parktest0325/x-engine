@@ -62,10 +62,21 @@
     <Filter Include="Module">
       <UniqueIdentifier>{6d7bdefd-0467-4d4c-9c7a-43c177c4b1bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HLSL">
+      <UniqueIdentifier>{99490bf1-fe7e-42b5-a686-c89bfa749be0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HLSL\2D">
+      <UniqueIdentifier>{d45c2dce-5ef9-4bf2-99cd-a984c53169bd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
       <Filter>Module</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="std2d.fx">
+      <Filter>HLSL\2D</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
