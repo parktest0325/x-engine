@@ -155,6 +155,42 @@ void TempRelease()
 
 void TempTick()
 {
+	if (GetAsyncKeyState('W') & 0x8001)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			g_arrVtx[i].vPos.y += 0.0001f;
+		}
+	}
+	if (GetAsyncKeyState('S') & 0x8001)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			g_arrVtx[i].vPos.y -= 0.0001f;
+		}
+	}
+	if (GetAsyncKeyState('A') & 0x8001)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			g_arrVtx[i].vPos.x -= 0.0001f;
+		}
+	}
+	if (GetAsyncKeyState('D') & 0x8001)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			g_arrVtx[i].vPos.x += 0.0001f;
+		}
+	}
+
+	// SystemMemory -> GPU Memory
+	// VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	// 이 옵션이 없으면 Map 함수에서 실패해서 tSub.pData에 nullptr 가 저장된다
+	D3D11_MAPPED_SUBRESOURCE tSub = {};
+	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
+	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 3);
+	CONTEXT->Unmap(g_VB.Get(), 0);
 }
 
 void TempRender()

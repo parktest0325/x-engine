@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "Client.h"
 
+#include <Engine/global.h>
 #include <Engine/CEngine.h>
 
 #ifdef _DEBUG

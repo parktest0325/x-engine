@@ -2,7 +2,9 @@
 
 // DX 전담 매니저
 class CDevice
+	: public CSingleton<CDevice>
 {
+	SINGLE(CDevice)
 private:
 	// 렌더링 하고나면 송출시킬 윈도우를 알아야함
 	HWND							m_hMainWnd;
@@ -21,12 +23,6 @@ private:
 	ComPtr<ID3D11DepthStencilView>	m_DSV;
 
 public:
-	static CDevice* GetInst()
-	{
-		static CDevice mgr;
-		return &mgr;
-	}
-
 	int init(HWND _hWnd, POINT _Resolution);
 	void ClearTarget(float(&_ArrColor)[4]);
 	void Present() { m_SwapChain->Present(0, 0); }
@@ -37,12 +33,5 @@ public:
 private:
 	int CreateSwapChain();
 	int CreateView();
-
-private:
-	CDevice();
-	CDevice(const CDevice& _other) = delete;
-
-public:
-	~CDevice();
 };
 
