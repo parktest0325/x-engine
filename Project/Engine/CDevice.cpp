@@ -53,6 +53,7 @@ int CDevice::init(HWND _hWnd, POINT _Resolution)
 void CDevice::ClearTarget(float(&_ArrColor)[4])
 {
 	m_Context->ClearRenderTargetView(m_RTV.Get(), _ArrColor);
+	m_Context->ClearDepthStencilView(m_DSV.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 }
 
 int CDevice::CreateSwapChain()
