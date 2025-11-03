@@ -14,7 +14,7 @@ ComPtr<ID3D11Buffer> g_IB;
 ComPtr<ID3D11InputLayout> g_Layout;
 
 // 시스템메모리의 정점 정보
-Vtx g_arrVtx[6] = {};
+Vtx g_arrVtx[4] = {};
 
 // Vertex Shader
 ComPtr<ID3DBlob>			g_VSBlob;   // HLSL 컴파일 한 쉐이더코드 저장
@@ -32,31 +32,20 @@ ComPtr<ID3DBlob>			g_ErrBlob;
 int TempInit()
 {
 	// 좌표는 그냥 수학적인 좌표평면계 처럼 왼쪽아래가 작다.
-	//            0 (-.5,.5)
-	//            | \ 
-	// (-.5,-.5)  2--1  (.5,-.5)
+	// 0 -- 1
+	// |  \ |
+	// 3 -- 2
 	g_arrVtx[0].vPos = Vec3(-0.5f, 0.5f, 0.f);
 	g_arrVtx[0].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
 
-	g_arrVtx[1].vPos = Vec3(0.5f, -0.5f, 0.f);
+	g_arrVtx[1].vPos = Vec3(0.5f, 0.5f, 0.f);
 	g_arrVtx[1].vColor = Vec4(0.f, 1.f, 0.f, 1.f);
 
-	g_arrVtx[2].vPos = Vec3(-0.5f, -0.5f, 0.f);
+	g_arrVtx[2].vPos = Vec3(0.5f, -0.5f, 0.f);
 	g_arrVtx[2].vColor = Vec4(0.f, 0.f, 1.f, 1.f);
 
-	// 이거 4랑 5랑 위치를 변경하면 렌더링이 안됨.. (백페이스 컬링?)
-	// 렌더링은 위에서부터 아래로 되는것이기 때문에 y좌표가 낮아지는쪽이 후순위 정점이 되어야한다.
-	// (-.5,.5)   3--4 (.5,.5)
-	//             \ |
-	//               5 (.5,-.5)
-	g_arrVtx[3].vPos = Vec3(-0.5f, 0.5f, 0.f);
+	g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
 	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
-
-	g_arrVtx[5].vPos = Vec3(0.5f, -0.5f, 0.f);
-	g_arrVtx[5].vColor = Vec4(0.f, 1.f, 0.f, 1.f);
-
-	g_arrVtx[4].vPos = Vec3(0.5f, 0.5f, 0.f);
-	g_arrVtx[4].vColor = Vec4(0.f, 0.f, 1.f, 1.f);
 
 
 	// GPU 메모리로 옮겨야됨
@@ -75,6 +64,26 @@ int TempInit()
 	{
 		return E_FAIL;
 	}
+
+	// 인덱스버퍼 생성
+	// [0,2,3,0,1,2]
+	UINT arrIdx[6] = { 0, 2, 3, 0, 1, 2 };
+	D3D11_BUFFER_DESC IBDesc = {};
+	IBDesc.ByteWidth = sizeof(UINT) * 6;
+	IBDesc.MiscFlags = 0;
+	IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;		// 인덱스 버퍼용 플래그
+
+	IBDesc.CPUAccessFlags = 0;						// 한번 생성한 이후 수정할 필요가 없음 (CPU에서는 RW 불가)
+	IBDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	SubDesc = {};
+	SubDesc.pSysMem = arrIdx;
+
+	if (FAILED(DEVICE->CreateBuffer(&IBDesc, &SubDesc, g_IB.GetAddressOf())))
+	{
+		return E_FAIL;
+	}
+
 
 	// 버텍스 쉐이더
 	wchar_t szBuffer[256] = {};
@@ -179,28 +188,28 @@ void TempTick()
 
 	if (KEY_PRESSED(KEY::W))
 	{
-		for (int i = 0; i < 6; ++i)
+		for (int i = 0; i < 4; ++i)
 		{
 			g_arrVtx[i].vPos.y += 1.f * DT;
 		}
 	}
 	if (KEY_PRESSED(KEY::S))
 	{
-		for (int i = 0; i < 6; ++i)
+		for (int i = 0; i < 4; ++i)
 		{
 			g_arrVtx[i].vPos.y -= 1.f * DT;
 		}
 	}
 	if (KEY_PRESSED(KEY::D))
 	{
-		for (int i = 0; i < 6; ++i)
+		for (int i = 0; i < 4; ++i)
 		{
 			g_arrVtx[i].vPos.x += 1.f * DT;
 		}
 	}
 	if (KEY_PRESSED(KEY::A))
 	{
-		for (int i = 0; i < 6; ++i)
+		for (int i = 0; i < 4; ++i)
 		{
 			g_arrVtx[i].vPos.x -= 1.f * DT;
 		}
@@ -211,7 +220,7 @@ void TempTick()
 	// 이 옵션이 없으면 Map 함수에서 실패해서 tSub.pData에 nullptr 가 저장된다
 	D3D11_MAPPED_SUBRESOURCE tSub = {};
 	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
-	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 6);
+	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 4);
 	CONTEXT->Unmap(g_VB.Get(), 0);
 }
 
@@ -221,6 +230,10 @@ void TempRender()
 	UINT Stride = sizeof(Vtx);	// 버퍼에서 정점의 간격
 	UINT Offset = 0;			// 렌더링할 정점의 버퍼상 오프셋. 일부만(몸통만) 렌더링하기 위해 오프셋을 지정할수도 있음 
 	CONTEXT->IASetVertexBuffers(0, 1, g_VB.GetAddressOf(), &Stride, &Offset);
+
+	// 인덱스버퍼가 지금 UINT타입(4byte)이라서 R32_UINT 포맷으로 지정한다. 2byte하나가 인덱스 하나라면 포맷도 맞는 크기로 변경해야한다.
+	CONTEXT->IASetIndexBuffer(g_IB.Get(), DXGI_FORMAT_R32_UINT, 0);
+
 	CONTEXT->IASetInputLayout(g_Layout.Get());
 	// 레스터라이저에서 토폴로지에 따라서 선택할 픽셀을 결정한다.
 	// 삼각형이라고 해도 내부를 채우는 삼각형인지, 테두리만 픽셀쉐이더로 선택할건지를 결정해야하기 때문
@@ -233,5 +246,6 @@ void TempRender()
 	// 뎁스스텐실스테이트,  블렌드스테이트 기본값 사용할것
 
 	// 0에서부터 6개의 정점을 렌더링한다. 
-	CONTEXT->Draw(6, 0);
+	// CONTEXT->Draw(6, 0);
+	CONTEXT->DrawIndexed(6, 0, 0);
 }
