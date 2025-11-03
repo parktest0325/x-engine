@@ -7,11 +7,14 @@
 // 정점 정보를 저장하는 버퍼 포인터
 ComPtr<ID3D11Buffer> g_VB;
 
+// 버텍스쉐이더에서 사용할 정점을 가리키는 인덱스 버퍼
+ComPtr<ID3D11Buffer> g_IB;
+
 // 정점을 구성하는 레이아웃 정보
 ComPtr<ID3D11InputLayout> g_Layout;
 
 // 시스템메모리의 정점 정보
-Vtx g_arrVtx[3] = {};
+Vtx g_arrVtx[6] = {};
 
 // Vertex Shader
 ComPtr<ID3DBlob>			g_VSBlob;   // HLSL 컴파일 한 쉐이더코드 저장
@@ -29,22 +32,37 @@ ComPtr<ID3DBlob>			g_ErrBlob;
 int TempInit()
 {
 	// 좌표는 그냥 수학적인 좌표평면계 처럼 왼쪽아래가 작다.
-	//             0  (0, 1)
-	//           /   \ 
-	// (-1,-1)  2 --- 1  (1,-1)
-	g_arrVtx[0].vPos = Vec3(0.f, 1.f, 0.f);
+	//            0 (-.5,.5)
+	//            | \ 
+	// (-.5,-.5)  2--1  (.5,-.5)
+	g_arrVtx[0].vPos = Vec3(-0.5f, 0.5f, 0.f);
 	g_arrVtx[0].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
 
-	g_arrVtx[1].vPos = Vec3(1.f, -1.f, 0.f);
+	g_arrVtx[1].vPos = Vec3(0.5f, -0.5f, 0.f);
 	g_arrVtx[1].vColor = Vec4(0.f, 1.f, 0.f, 1.f);
 
-	g_arrVtx[2].vPos = Vec3(-1.f, -1.f, 0.f);
+	g_arrVtx[2].vPos = Vec3(-0.5f, -0.5f, 0.f);
 	g_arrVtx[2].vColor = Vec4(0.f, 0.f, 1.f, 1.f);
+
+	// 이거 4랑 5랑 위치를 변경하면 렌더링이 안됨.. (백페이스 컬링?)
+	// 렌더링은 위에서부터 아래로 되는것이기 때문에 y좌표가 낮아지는쪽이 후순위 정점이 되어야한다.
+	// (-.5,.5)   3--4 (.5,.5)
+	//             \ |
+	//               5 (.5,-.5)
+	g_arrVtx[3].vPos = Vec3(-0.5f, 0.5f, 0.f);
+	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
+
+	g_arrVtx[5].vPos = Vec3(0.5f, -0.5f, 0.f);
+	g_arrVtx[5].vColor = Vec4(0.f, 1.f, 0.f, 1.f);
+
+	g_arrVtx[4].vPos = Vec3(0.5f, 0.5f, 0.f);
+	g_arrVtx[4].vColor = Vec4(0.f, 0.f, 1.f, 1.f);
+
 
 	// GPU 메모리로 옮겨야됨
 	// 정점버퍼 생성 (GPU메모리에 생성됨)
 	D3D11_BUFFER_DESC VBDesc = {};
-	VBDesc.ByteWidth = sizeof(Vtx) * 3;				// 버퍼의 크기
+	VBDesc.ByteWidth = sizeof(Vtx) * 6;				// 버퍼의 크기
 	VBDesc.MiscFlags = 0;		// Not used
 	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	// 생성되는 버퍼의 용도. 나중에 버텍스버퍼를 받는 인풋어셈블러에서 에러가 발생하지 않게 지정
 	// 생성된 이후에도 지속적으로 CPU에서 접근해서 수정될 수 있는 녀석이다.
@@ -161,28 +179,28 @@ void TempTick()
 
 	if (KEY_PRESSED(KEY::W))
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < 6; ++i)
 		{
 			g_arrVtx[i].vPos.y += 1.f * DT;
 		}
 	}
 	if (KEY_PRESSED(KEY::S))
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < 6; ++i)
 		{
-			g_arrVtx[i].vPos.y -= 0.1f;
+			g_arrVtx[i].vPos.y -= 1.f * DT;
 		}
 	}
 	if (KEY_PRESSED(KEY::D))
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < 6; ++i)
 		{
 			g_arrVtx[i].vPos.x += 1.f * DT;
 		}
 	}
 	if (KEY_PRESSED(KEY::A))
 	{
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < 6; ++i)
 		{
 			g_arrVtx[i].vPos.x -= 1.f * DT;
 		}
@@ -193,7 +211,7 @@ void TempTick()
 	// 이 옵션이 없으면 Map 함수에서 실패해서 tSub.pData에 nullptr 가 저장된다
 	D3D11_MAPPED_SUBRESOURCE tSub = {};
 	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
-	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 3);
+	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 6);
 	CONTEXT->Unmap(g_VB.Get(), 0);
 }
 
@@ -214,6 +232,6 @@ void TempRender()
 	CONTEXT->PSSetShader(g_PS.Get(), nullptr, 0);	// 픽셀쉐이더가 모든픽셀에 하나씩 적용되는데, 빨간색이 리턴되는 픽셀쉐이더로 구현되어있음
 	// 뎁스스텐실스테이트,  블렌드스테이트 기본값 사용할것
 
-	// 0에서부터 3개의 정점을 렌더링한다. 
-	CONTEXT->Draw(3, 0);
+	// 0에서부터 6개의 정점을 렌더링한다. 
+	CONTEXT->Draw(6, 0);
 }
