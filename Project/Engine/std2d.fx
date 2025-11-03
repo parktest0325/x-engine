@@ -22,7 +22,7 @@ VS_OUT VS_Std2D(VS_IN _in)
 
 float4 PS_Std2D(VS_OUT _in) : SV_Target
 {
-	return float4(1.f, 0.f, 0.f, 1.f);
+	return float4(0.2f, 0.2f, 0.5f, 1.f);
 }
 
 #endif

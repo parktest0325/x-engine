@@ -31,14 +31,14 @@
     <ClInclude Include="singleton.h">
       <Filter>Module</Filter>
     </ClInclude>
-    <ClInclude Include="CTimeMgr.h">
-      <Filter>04. Manager</Filter>
-    </ClInclude>
     <ClInclude Include="CPathMgr.h">
-      <Filter>04. Manager</Filter>
+      <Filter>04. Manager\03. PathMgr</Filter>
     </ClInclude>
     <ClInclude Include="CKeyMgr.h">
-      <Filter>04. Manager</Filter>
+      <Filter>04. Manager\02. KeyMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CTimeMgr.h">
+      <Filter>04. Manager\01. TimeMgr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -58,13 +58,13 @@
       <Filter>Default</Filter>
     </ClCompile>
     <ClCompile Include="CPathMgr.cpp">
-      <Filter>04. Manager</Filter>
-    </ClCompile>
-    <ClCompile Include="CTimeMgr.cpp">
-      <Filter>04. Manager</Filter>
+      <Filter>04. Manager\03. PathMgr</Filter>
     </ClCompile>
     <ClCompile Include="CKeyMgr.cpp">
-      <Filter>04. Manager</Filter>
+      <Filter>04. Manager\02. KeyMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CTimeMgr.cpp">
+      <Filter>04. Manager\01. TimeMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +91,15 @@
     </Filter>
     <Filter Include="04. Manager">
       <UniqueIdentifier>{77afa6f2-a934-4e9f-973e-864bb2a63859}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. Manager\01. TimeMgr">
+      <UniqueIdentifier>{2883f7ed-4cb8-4ab5-825b-abd8ac368b48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. Manager\02. KeyMgr">
+      <UniqueIdentifier>{ab2fddfc-7cd2-482e-9b1c-4e889d652775}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. Manager\03. PathMgr">
+      <UniqueIdentifier>{33a59bdc-f46d-4031-8475-139bdc44df45}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
