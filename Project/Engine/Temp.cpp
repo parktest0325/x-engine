@@ -5,11 +5,12 @@
 #include "CKeyMgr.h"
 #include "CPathMgr.h"
 
-// 정점 정보를 저장하는 버퍼 포인터
-ComPtr<ID3D11Buffer> g_VB;
+#include "CMesh.h"
 
-// 버텍스쉐이더에서 사용할 정점을 가리키는 인덱스 버퍼
-ComPtr<ID3D11Buffer> g_IB;
+// Mesh
+CMesh* g_RectMesh = nullptr;
+CMesh* g_CircleMesh = nullptr;
+
 
 // 상수버퍼(Constant Buffer) 물체의 위치, 크기, 회전량 정보를 전달하는 용도
 ComPtr<ID3D11Buffer> g_CB;
@@ -38,6 +39,9 @@ ComPtr<ID3DBlob>			g_ErrBlob;
 
 int TempInit()
 {
+	// ===========
+	// Rect Mesh
+	// ===========
 	// 좌표는 그냥 수학적인 좌표평면계 처럼 왼쪽아래가 작다.
 	// 0 -- 1
 	// |  \ |
@@ -53,45 +57,52 @@ int TempInit()
 
 
 	g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
-	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
+	g_arrVtx[3].vColor = Vec4(0.f, 1.f, 0.f, 1.f);
 
-
-
-	// GPU 메모리로 옮겨야됨
-	// 정점버퍼 생성 (GPU메모리에 생성됨)
-	D3D11_BUFFER_DESC VBDesc = {};
-	VBDesc.ByteWidth = sizeof(Vtx) * 6;				// 버퍼의 크기
-	VBDesc.MiscFlags = 0;		// Not used
-	VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	// 생성되는 버퍼의 용도. 나중에 버텍스버퍼를 받는 인풋어셈블러에서 에러가 발생하지 않게 지정
-	// 생성된 이후에도 지속적으로 CPU에서 접근해서 수정될 수 있는 녀석이다.
-	VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	VBDesc.Usage = D3D11_USAGE_DYNAMIC;
-
-	D3D11_SUBRESOURCE_DATA SubDesc = {};    // 초기값
-	SubDesc.pSysMem = g_arrVtx;
-	if (FAILED(DEVICE->CreateBuffer(&VBDesc, &SubDesc, g_VB.GetAddressOf())))
-	{
-		return E_FAIL;
-	}
-
-	// 인덱스버퍼 생성
-	// [0,2,3,0,1,2]
 	UINT arrIdx[6] = { 0, 2, 3, 0, 1, 2 };
-	D3D11_BUFFER_DESC IBDesc = {};
-	IBDesc.ByteWidth = sizeof(UINT) * 6;
-	IBDesc.MiscFlags = 0;
-	IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;		// 인덱스 버퍼용 플래그
 
-	IBDesc.CPUAccessFlags = 0;						// 한번 생성한 이후 수정할 필요가 없음 (CPU에서는 RW 불가)
-	IBDesc.Usage = D3D11_USAGE_DEFAULT;
+	g_RectMesh = new CMesh;
+	g_RectMesh->Create(g_arrVtx, 4, arrIdx, 6);
 
-	SubDesc = {};
-	SubDesc.pSysMem = arrIdx;
 
-	if (FAILED(DEVICE->CreateBuffer(&IBDesc, &SubDesc, g_IB.GetAddressOf())))
+	// ===========
+	// Circle Mesh 
+	// ===========
+	vector<Vtx> vecVtx;
+	// 원점
+	Vtx v;
+	v.vPos = Vec3(0.f, 0.f, 0.f);
+	v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
+	vecVtx.push_back(v);
+
+	float Radius = 0.5;
+	UINT Slice = 60;
+	float AngleStep = (2 * XM_PI) / Slice;
+
+	float Angle = 0.f;
+	// 정점을 하나 더 넣는데, 이건 인덱스 반복문 돌때 예외처리할 필요 없도록 하기 위함.
+	for (UINT i = 0; i <= Slice; ++i)
 	{
-		return E_FAIL;
+		Vtx v;
+		// 임의의 반지름 R일때, 각도 세타에서 원과 만나는 점 = (R*Cos(세타), R*Sin(세타))
+		v.vPos = Vec3(cosf(Angle) * Radius, sinf(Angle) * Radius, 0.f);
+		v.vColor = Vec4(1.f, 1.f, 1.f, 1.f);
+
+		vecVtx.push_back(v);
+
+		Angle += AngleStep;
 	}
+
+	vector<UINT> vecIdx;
+	for (UINT i = 0; i < Slice; ++i)
+	{
+		vecIdx.push_back(0);
+		vecIdx.push_back(i + 2);
+		vecIdx.push_back(i + 1);
+	}
+
+	g_CircleMesh = new CMesh;
+	g_CircleMesh->Create(vecVtx.data(), vecVtx.size(), vecIdx.data(), vecIdx.size());
 
 
 	// 상수버퍼 생성
@@ -199,6 +210,10 @@ int TempInit()
 
 void TempRelease()
 {
+	if (g_RectMesh != nullptr)
+		delete g_RectMesh;
+	if (g_CircleMesh != nullptr)
+		delete g_CircleMesh;
 }
 
 void TempTick()
@@ -235,21 +250,10 @@ void TempTick()
 
 void TempRender()
 {
-	// InputAssembler 세팅
-	UINT Stride = sizeof(Vtx);	// 버퍼에서 정점의 간격
-	UINT Offset = 0;			// 렌더링할 정점의 버퍼상 오프셋. 일부만(몸통만) 렌더링하기 위해 오프셋을 지정할수도 있음 
-	CONTEXT->IASetVertexBuffers(0, 1, g_VB.GetAddressOf(), &Stride, &Offset);
-
-	// 인덱스버퍼가 지금 UINT타입(4byte)이라서 R32_UINT 포맷으로 지정한다. 2byte하나가 인덱스 하나라면 포맷도 맞는 크기로 변경해야한다.
-	CONTEXT->IASetIndexBuffer(g_IB.Get(), DXGI_FORMAT_R32_UINT, 0);
-
 							// 레지스터 번호, 수, CPU상수버퍼
 	CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
 
 	CONTEXT->IASetInputLayout(g_Layout.Get());
-	// 레스터라이저에서 토폴로지에 따라서 선택할 픽셀을 결정한다.
-	// 삼각형이라고 해도 내부를 채우는 삼각형인지, 테두리만 픽셀쉐이더로 선택할건지를 결정해야하기 때문
-	// TRIANGLELIST를 사용하면, 전달한 정점 리스트를 세개씩 끊어서 삼각형으로 인식하고 그 내부를 채우는 면 형태로 인식한다는 의미.
 	CONTEXT->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// 쉐이더 세팅
@@ -257,7 +261,6 @@ void TempRender()
 	CONTEXT->PSSetShader(g_PS.Get(), nullptr, 0);	// 픽셀쉐이더가 모든픽셀에 하나씩 적용되는데, 빨간색이 리턴되는 픽셀쉐이더로 구현되어있음
 	// 뎁스스텐실스테이트,  블렌드스테이트 기본값 사용할것
 
-	// 0에서부터 6개의 정점을 렌더링한다. 
-	// CONTEXT->Draw(6, 0);
-	CONTEXT->DrawIndexed(6, 0, 0);
+	//g_RectMesh->render();
+	g_CircleMesh->render();
 }

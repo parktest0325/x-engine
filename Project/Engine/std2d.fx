@@ -9,11 +9,13 @@ cbuffer TRANSFORM : register(b0)	// 레지스터 번호 필요
 struct VS_IN
 {
 	float3 vPos : POSITION0;		// SymenticName(+SymenticIndex)
+	float4 vColor : COLOR;
 };
 
 struct VS_OUT
 {
 	float4 vPosition : SV_Position;
+	float4 vColor : COLOR;
 };
 
 VS_OUT VS_Std2D(VS_IN _in)
@@ -21,13 +23,14 @@ VS_OUT VS_Std2D(VS_IN _in)
 	VS_OUT output = (VS_OUT)0.f;
 
 	output.vPosition = float4(_in.vPos + g_Position.xyz, 1.f);
+	output.vColor = _in.vColor;
 
 	return output;
 }
 
 float4 PS_Std2D(VS_OUT _in) : SV_Target
 {
-	return float4(0.2f, 0.2f, 0.5f, 1.f);
+	return _in.vColor;
 }
 
 #endif
