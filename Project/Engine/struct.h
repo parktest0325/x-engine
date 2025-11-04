@@ -7,3 +7,9 @@ struct Vtx
 	Vec3 vPos;
 	Vec4 vColor;
 };
+
+// 상수버퍼 관련
+struct tTransform
+{
+	Vec4 Position;	// x, y, z, padding
+};

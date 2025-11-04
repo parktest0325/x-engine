@@ -11,11 +11,17 @@ ComPtr<ID3D11Buffer> g_VB;
 // 버텍스쉐이더에서 사용할 정점을 가리키는 인덱스 버퍼
 ComPtr<ID3D11Buffer> g_IB;
 
+// 상수버퍼(Constant Buffer) 물체의 위치, 크기, 회전량 정보를 전달하는 용도
+ComPtr<ID3D11Buffer> g_CB;
+
 // 정점을 구성하는 레이아웃 정보
 ComPtr<ID3D11InputLayout> g_Layout;
 
 // 시스템메모리의 정점 정보
 Vtx g_arrVtx[4] = {};
+
+// 물체 위치값
+Vec3 g_ObjectPos;
 
 // Vertex Shader
 ComPtr<ID3DBlob>			g_VSBlob;   // HLSL 컴파일 한 쉐이더코드 저장
@@ -45,8 +51,10 @@ int TempInit()
 	g_arrVtx[2].vPos = Vec3(0.5f, -0.5f, 0.f);
 	g_arrVtx[2].vColor = Vec4(0.f, 0.f, 1.f, 1.f);
 
+
 	g_arrVtx[3].vPos = Vec3(-0.5f, -0.5f, 0.f);
 	g_arrVtx[3].vColor = Vec4(1.f, 0.f, 0.f, 1.f);
+
 
 
 	// GPU 메모리로 옮겨야됨
@@ -84,6 +92,25 @@ int TempInit()
 	{
 		return E_FAIL;
 	}
+
+
+	// 상수버퍼 생성
+	D3D11_BUFFER_DESC CBDesc = {};
+
+	CBDesc.ByteWidth = sizeof(tTransform);
+	CBDesc.MiscFlags = 0;
+	CBDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+
+	// 위치값이기 때문에 계속 수정해야함.
+	CBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	CBDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	// 초기값 없음
+	if (FAILED(DEVICE->CreateBuffer(&CBDesc, nullptr, g_CB.GetAddressOf())))
+	{
+		return E_FAIL;
+	}
+
 
 	// 버텍스 쉐이더
 	wstring strPath = CPathMgr::GetInst()->GetContentPath();
@@ -165,6 +192,7 @@ int TempInit()
 		return E_FAIL;
 	}
 
+	g_ObjectPos = Vec3(0.f, 0.f, 0.f);
 
 	return S_OK;
 }
@@ -179,40 +207,30 @@ void TempTick()
 
 	if (KEY_PRESSED(KEY::W))
 	{
-		for (int i = 0; i < 4; ++i)
-		{
-			g_arrVtx[i].vPos.y += 1.f * DT;
-		}
+		g_ObjectPos.y += DT;
 	}
 	if (KEY_PRESSED(KEY::S))
 	{
-		for (int i = 0; i < 4; ++i)
-		{
-			g_arrVtx[i].vPos.y -= 1.f * DT;
-		}
+		g_ObjectPos.y -= DT;
 	}
 	if (KEY_PRESSED(KEY::D))
 	{
-		for (int i = 0; i < 4; ++i)
-		{
-			g_arrVtx[i].vPos.x += 1.f * DT;
-		}
+		g_ObjectPos.x += DT;
 	}
 	if (KEY_PRESSED(KEY::A))
 	{
-		for (int i = 0; i < 4; ++i)
-		{
-			g_arrVtx[i].vPos.x -= 1.f * DT;
-		}
+		g_ObjectPos.x -= DT;
 	}
 
 	// SystemMemory -> GPU Memory
 	// VBDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	// 이 옵션이 없으면 Map 함수에서 실패해서 tSub.pData에 nullptr 가 저장된다
 	D3D11_MAPPED_SUBRESOURCE tSub = {};
-	CONTEXT->Map(g_VB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
-	memcpy(tSub.pData, g_arrVtx, sizeof(Vtx) * 4);
-	CONTEXT->Unmap(g_VB.Get(), 0);
+	CONTEXT->Map(g_CB.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &tSub);
+	tTransform trans = {};
+	trans.Position = g_ObjectPos;
+	memcpy(tSub.pData, &trans, sizeof(tTransform));
+	CONTEXT->Unmap(g_CB.Get(), 0);
 }
 
 void TempRender()
@@ -224,6 +242,9 @@ void TempRender()
 
 	// 인덱스버퍼가 지금 UINT타입(4byte)이라서 R32_UINT 포맷으로 지정한다. 2byte하나가 인덱스 하나라면 포맷도 맞는 크기로 변경해야한다.
 	CONTEXT->IASetIndexBuffer(g_IB.Get(), DXGI_FORMAT_R32_UINT, 0);
+
+							// 레지스터 번호, 수, CPU상수버퍼
+	CONTEXT->VSSetConstantBuffers(0, 1, g_CB.GetAddressOf());
 
 	CONTEXT->IASetInputLayout(g_Layout.Get());
 	// 레스터라이저에서 토폴로지에 따라서 선택할 픽셀을 결정한다.
