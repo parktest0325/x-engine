@@ -1,5 +1,7 @@
 #pragma once
 
+class CConstBuffer;
+
 // DX 전담 매니저
 class CDevice
 	: public CSingleton<CDevice>
@@ -22,6 +24,8 @@ private:
 	ComPtr<ID3D11Texture2D>			m_DepthStencilTex;
 	ComPtr<ID3D11DepthStencilView>	m_DSV;
 
+	CConstBuffer*					m_CB[(UINT)CB_TYPE::END];
+
 public:
 	int init(HWND _hWnd, POINT _Resolution);
 	void ClearTarget(float(&_ArrColor)[4]);
@@ -29,9 +33,11 @@ public:
 
 	ID3D11Device* GetDevice() { return m_Device.Get(); }
 	ID3D11DeviceContext* GetContext() { return m_Context.Get(); }
+	CConstBuffer* GetConstBuffer(CB_TYPE _Type) { return m_CB[(UINT)_Type]; }
 
 private:
 	int CreateSwapChain();
 	int CreateView();
+	int CreateConstBuffer();
 };
 

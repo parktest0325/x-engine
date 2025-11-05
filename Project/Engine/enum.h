@@ -13,3 +13,13 @@ enum class ASSET_TYPE
 
 	END,
 };
+
+enum class CB_TYPE
+{
+	TRANSFORM,
+	MATERIAL,
+	ANIMATION,
+	GLOBAL,
+
+	END,
+};
