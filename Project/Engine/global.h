@@ -37,3 +37,5 @@ using std::wstring;
 #include "func.h"
 
 #include "singleton.h"
+
+#include "ptr.h"

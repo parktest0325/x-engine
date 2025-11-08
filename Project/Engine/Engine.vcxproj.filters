@@ -64,6 +64,21 @@
     <ClInclude Include="func.h">
       <Filter>01. Header</Filter>
     </ClInclude>
+    <ClInclude Include="CShader.h">
+      <Filter>07. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="CGraphicShader.h">
+      <Filter>07. Asset\Shader\GraphicShader</Filter>
+    </ClInclude>
+    <ClInclude Include="CComputeShader.h">
+      <Filter>07. Asset\Shader\ComputeShader</Filter>
+    </ClInclude>
+    <ClInclude Include="CAssetMgr.h">
+      <Filter>04. Manager\04. AssetMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="ptr.h">
+      <Filter>07. Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -107,6 +122,21 @@
     </ClCompile>
     <ClCompile Include="CConstBuffer.cpp">
       <Filter>03. Device\ConstBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="CShader.cpp">
+      <Filter>07. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="CGraphicShader.cpp">
+      <Filter>07. Asset\Shader\GraphicShader</Filter>
+    </ClCompile>
+    <ClCompile Include="CComputeShader.cpp">
+      <Filter>07. Asset\Shader\ComputeShader</Filter>
+    </ClCompile>
+    <ClCompile Include="CAssetMgr.cpp">
+      <Filter>04. Manager\04. AssetMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CAssetMgr_Init.cpp">
+      <Filter>04. Manager\04. AssetMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +205,15 @@
     </Filter>
     <Filter Include="03. Device\ConstBuffer">
       <UniqueIdentifier>{189e05c5-282f-44ea-aeed-d79e35dad5f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07. Asset\Shader\GraphicShader">
+      <UniqueIdentifier>{5abcd30b-bdbf-4442-afc7-78d8d6a8bf89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="07. Asset\Shader\ComputeShader">
+      <UniqueIdentifier>{6ef42e25-d5e7-4ec1-82f9-e3e7f03912d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. Manager\04. AssetMgr">
+      <UniqueIdentifier>{3c28779c-10f4-4869-9ccf-78160da4087e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

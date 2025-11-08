@@ -7,13 +7,11 @@
 
 #include "CMesh.h"
 #include "CConstBuffer.h"
+#include "CGraphicShader.h"
 
 // Mesh
-CMesh* g_RectMesh = nullptr;
-CMesh* g_CircleMesh = nullptr;
-
-// 정점을 구성하는 레이아웃 정보
-ComPtr<ID3D11InputLayout> g_Layout;
+Ptr<CMesh> g_RectMesh = nullptr;
+Ptr<CMesh> g_CircleMesh = nullptr;
 
 // 시스템메모리의 정점 정보
 Vtx g_arrVtx[4] = {};
@@ -21,17 +19,8 @@ Vtx g_arrVtx[4] = {};
 // 물체의 위치, 크기, 회전
 tTransform g_Trans = {};
 
-// Vertex Shader
-ComPtr<ID3DBlob>			g_VSBlob;   // HLSL 컴파일 한 쉐이더코드 저장
-ComPtr<ID3D11VertexShader>	g_VS;		// Vertex Shader 객체
-
-// Pixel Shader
-ComPtr<ID3DBlob>			g_PSBlob;
-ComPtr<ID3D11PixelShader>	g_PS;
-
-// Error Blob
-ComPtr<ID3DBlob>			g_ErrBlob;
-
+// HLSL
+Ptr<CGraphicShader> g_Shader = nullptr;
 
 
 int TempInit()
@@ -102,95 +91,21 @@ int TempInit()
 	g_CircleMesh->Create(vecVtx.data(), vecVtx.size(), vecIdx.data(), vecIdx.size());
 
 
-	// 버텍스 쉐이더
+	// 버텍스 쉐이더, 픽셀 쉐이더 생성
 	wstring strPath = CPathMgr::GetInst()->GetContentPath();
 	strPath += L"shader\\std2d.fx";
 
-	if (FAILED(D3DCompileFromFile(strPath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		"VS_Std2D", "vs_5_0", D3DCOMPILE_DEBUG, 0,
-		g_VSBlob.GetAddressOf(),
-		g_ErrBlob.GetAddressOf())))
-	{
-		if (nullptr != g_ErrBlob)
-		{
-			// 문법오류 등
-			MessageBoxA(nullptr, (char*)g_ErrBlob->GetBufferPointer(), "버텍스 쉐이더 컴파일 오류", MB_OK);
-		}
-		else
-		{
-			MessageBox(nullptr, L"파일을 찾을 수 없습니다.", L"버텍스 쉐이더 컴파일 오류", MB_OK);
-		}
-		return E_FAIL;
-	}
-
-	if (FAILED(DEVICE->CreateVertexShader(g_VSBlob->GetBufferPointer(),
-		g_VSBlob->GetBufferSize(),
-		nullptr, g_VS.GetAddressOf())))
-	{
-		return E_FAIL;
-	}
+	g_Shader = new CGraphicShader;
+	g_Shader->CreateVertexShader(strPath.c_str(), "VS_Std2D");
+	g_Shader->CreatePixelShader(strPath.c_str(), "PS_Std2D");
 
 
-	// 정점 레이아웃 정보 생성
-	D3D11_INPUT_ELEMENT_DESC LayoutDesc[2] = {};
-
-	LayoutDesc[0].AlignedByteOffset = 0;
-	LayoutDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;	// 사실 정점에서 포지션의 정보라 xyz 4byte 3개인데 어쩔수없이 이걸로 한다. 사이즈가 비;슷한걸로
-	LayoutDesc[0].InputSlot = 0;						// 전달되는 버텍스버퍼가 몇번째 슬롯에 있는건지.. IA에 버텍스버퍼를 전달할때 사실 버텍스버퍼 말고도 여러 버퍼를 전달한다. 이때 몇번째 인덱스인지
-	LayoutDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;	// 이 슬롯은 정점데이터이다.
-	LayoutDesc[0].InstanceDataStepRate = 0;
-	LayoutDesc[0].SemanticName = "POSITION";			// 이 Layout의 ID를 부여한것
-	LayoutDesc[0].SemanticIndex = 0;					// 같은 시멘틱 네임중에서 인덱스. 각 엘리멘트에서 16byte가 최대인데, 64byte짜리 엘리멘트를 표현하려면 4개로 나눠야하기 때문에 같은 시멘틱 이름을 가질 수 잇다. 그렇게 됐을때 인덱스를 나눔
-	
-	LayoutDesc[1].AlignedByteOffset = sizeof(Vtx::vPos);
-	LayoutDesc[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	LayoutDesc[1].InputSlot = 0;
-	LayoutDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	LayoutDesc[0].InstanceDataStepRate = 0;
-	LayoutDesc[1].SemanticName = "COLOR";
-	LayoutDesc[1].SemanticIndex = 0;
-	
-	if (FAILED(DEVICE->CreateInputLayout(LayoutDesc, 2,
-		g_VSBlob->GetBufferPointer(), g_VSBlob->GetBufferSize(),
-		g_Layout.GetAddressOf())))
-	{
-		return E_FAIL;
-	}
-
-	
-	// 픽셀 쉐이더
-	if (FAILED(D3DCompileFromFile(strPath.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		"PS_Std2D", "ps_5_0", D3DCOMPILE_DEBUG, 0,
-		g_PSBlob.GetAddressOf(),
-		g_ErrBlob.GetAddressOf())))
-	{
-		if (nullptr != g_ErrBlob)
-		{
-			MessageBoxA(nullptr, (char*)g_ErrBlob->GetBufferPointer(), "픽셀 쉐이더 컴파일 오류", MB_OK);
-		}
-		else
-		{
-			MessageBox(nullptr, L"파일을 찾을 수 없습니다.", L"픽셀 쉐이더 컴파일 오류", MB_OK);
-		}
-		return E_FAIL;
-	}
-
-	if (FAILED(DEVICE->CreatePixelShader(g_PSBlob->GetBufferPointer(),
-		g_PSBlob->GetBufferSize(),
-		nullptr, g_PS.GetAddressOf())))
-	{
-		return E_FAIL;
-	}
 
 	return S_OK;
 }
 
 void TempRelease()
 {
-	if (g_RectMesh != nullptr)
-		delete g_RectMesh;
-	if (g_CircleMesh != nullptr)
-		delete g_CircleMesh;
 }
 
 void TempTick()
@@ -222,14 +137,12 @@ void TempTick()
 
 void TempRender()
 {
-	CONTEXT->IASetInputLayout(g_Layout.Get());
-	CONTEXT->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// 쉐이더 세팅
-	CONTEXT->VSSetShader(g_VS.Get(), nullptr, 0);
-	CONTEXT->PSSetShader(g_PS.Get(), nullptr, 0);	// 픽셀쉐이더가 모든픽셀에 하나씩 적용되는데, 빨간색이 리턴되는 픽셀쉐이더로 구현되어있음
+	g_Shader->Binding();
 	// 뎁스스텐실스테이트,  블렌드스테이트 기본값 사용할것
 
+	// 메쉬 세팅
 	//g_RectMesh->render();
 	g_CircleMesh->render();
 }

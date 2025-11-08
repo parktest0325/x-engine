@@ -3,10 +3,14 @@
 class CShader :
     public CAsset
 {
-private:
+protected:
+    ComPtr<ID3DBlob>        m_ErrBlob;
 
 public:
-    CShader();
+    virtual void Binding() = 0;
+
+public:
+    CShader(ASSET_TYPE _Type);
     ~CShader();
 };
 
