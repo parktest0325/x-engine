@@ -7,6 +7,10 @@ private:
 	T* m_Asset;
 
 public:
+	T* Get() { return m_Asset; }
+	T** GetAddressOf() { return &m_Asset; }
+
+public:
 	void operator = (T* _Asset)
 	{
 		if (m_Asset != _Asset)

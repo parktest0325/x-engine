@@ -79,6 +79,12 @@
     <ClInclude Include="ptr.h">
       <Filter>07. Asset</Filter>
     </ClInclude>
+    <ClInclude Include="components.h">
+      <Filter>01. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="assets.h">
+      <Filter>01. Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

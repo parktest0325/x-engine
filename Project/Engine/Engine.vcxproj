@@ -154,6 +154,7 @@ call Copy.bat</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="assets.h" />
     <ClInclude Include="CAsset.h" />
     <ClInclude Include="CAssetMgr.h" />
     <ClInclude Include="CComponent.h" />
@@ -166,6 +167,7 @@ call Copy.bat</Command>
     <ClInclude Include="CGraphicShader.h" />
     <ClInclude Include="CKeyMgr.h" />
     <ClInclude Include="CMesh.h" />
+    <ClInclude Include="components.h" />
     <ClInclude Include="CPathMgr.h" />
     <ClInclude Include="CShader.h" />
     <ClInclude Include="CTimeMgr.h" />
