@@ -24,7 +24,7 @@ CMesh::~CMesh()
 int CMesh::Create(Vtx* _VtxSysMem, size_t _VtxCount, UINT* _IdxSysMem, size_t _IdxCount)
 {
 	// 정점버퍼 생성 (GPU메모리에 생성됨)
-	m_VBDesc.ByteWidth = sizeof(Vtx) * _VtxCount;
+	m_VBDesc.ByteWidth = (UINT)(sizeof(Vtx) * _VtxCount);
 	m_VBDesc.MiscFlags = 0;
 	m_VBDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 
@@ -40,7 +40,7 @@ int CMesh::Create(Vtx* _VtxSysMem, size_t _VtxCount, UINT* _IdxSysMem, size_t _I
 
 	// 인덱스버퍼 생성
 	// [0,2,3,0,1,2]
-	m_IdxCount = _IdxCount;
+	m_IdxCount = (UINT)_IdxCount;
 	m_IBDesc.ByteWidth = sizeof(UINT) * m_IdxCount;
 	m_IBDesc.MiscFlags = 0;
 	m_IBDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;

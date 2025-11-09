@@ -21,24 +21,7 @@ CGameObject* pObject2 = nullptr;
 
 int TempInit()
 {
-	pObject = new CGameObject;
-	pObject->AddComponent(new CTransform);
-	pObject->AddComponent(new CMeshRender);
-	pObject->AddComponent(new CPlayerScript);
 
-	pObject->Transform()->SetRelativeScale(Vec3(0.2f, 0.2f, 0.2f));
-
-	pObject->MeshRender()->SetMesh(CAssetMgr::GetInst()->FindAsset<CMesh>(L"CircleMesh"));
-	pObject->MeshRender()->SetShader(CAssetMgr::GetInst()->FindAsset<CGraphicShader>(L"Std2DShader"));
-
-	pObject2 = new CGameObject;
-	pObject2->AddComponent(new CTransform);
-	pObject2->AddComponent(new CMeshRender);
-
-	pObject2->Transform()->SetRelativeScale(Vec3(0.4f, 0.4f, 0.4f));
-
-	pObject2->MeshRender()->SetMesh(CAssetMgr::GetInst()->FindAsset<CMesh>(L"RectMesh"));
-	pObject2->MeshRender()->SetShader(CAssetMgr::GetInst()->FindAsset<CGraphicShader>(L"Std2DShader"));
 	return S_OK;
 }
 

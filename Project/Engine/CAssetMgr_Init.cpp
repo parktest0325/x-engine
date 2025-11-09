@@ -117,7 +117,6 @@ void CAssetMgr::CreateDefaultGraphicShader()
 
 	// ¹öÅØ½º ½¦ÀÌ´õ, ÇÈ¼¿ ½¦ÀÌ´õ »ý¼º
 	wstring strPath = CPathMgr::GetInst()->GetContentPath();
-	strPath + L"shader\\std2d.fx";
 
 	pShader = new CGraphicShader;
 	pShader->CreateVertexShader(strPath + L"shader\\std2d.fx", "VS_Std2D");

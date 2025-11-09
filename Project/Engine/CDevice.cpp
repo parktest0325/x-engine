@@ -5,6 +5,7 @@
 CDevice::CDevice()
 	: m_hMainWnd(nullptr)
 	, m_RenderResolution{}
+	, m_CB{}
 {
 }
 
@@ -42,8 +43,8 @@ int CDevice::init(HWND _hWnd, POINT _Resolution)
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = m_RenderResolution.x;
-	viewport.Height = m_RenderResolution.y;
+	viewport.Width = (float)m_RenderResolution.x;
+	viewport.Height = (float)m_RenderResolution.y;
 	viewport.MinDepth = 0;
 	viewport.MaxDepth = 1;
 

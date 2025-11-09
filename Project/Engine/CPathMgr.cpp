@@ -17,7 +17,7 @@ void CPathMgr::init()
 	GetCurrentDirectory(256, m_szContentPath);
 
 	size_t len = wcslen(m_szContentPath);
-	for (int i = len - 1; i > 0; --i)
+	for (size_t i = len - 1; i > 0; --i)
 	{
 		if (m_szContentPath[i] == '\\')
 		{

@@ -21,3 +21,5 @@ typedef Vector4 Vec4;
 #define KEY_NONE(Key) KEY_CHECK(Key, KEY_STATE::NONE)
 
 #define DT CTimeMgr::GetInst()->GetDeltaTime()
+
+#define MAX_LAYER 32
