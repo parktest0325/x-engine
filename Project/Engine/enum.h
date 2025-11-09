@@ -1,5 +1,27 @@
 #pragma once
 
+enum class COMPONENT_TYPE
+{
+	TRANSFORM,
+	CAMERA,
+	COLLIDER2D,
+	COLLIDER3D,
+	ANIMATOR2D,
+	ANIMATOR3D,
+	LIGHT2D,
+	LIGHT3D,
+
+	MESHRENDER,
+	DECAL,
+	PARTICLESYSTEM,
+	TILEMAP,
+	LANDSCAPE,
+
+	END,
+
+	SCRIPT		// 기본 컴포넌트가 아니기 때문에 END 뒤에 위치
+};
+
 enum class ASSET_TYPE
 {
 	PREFAB,

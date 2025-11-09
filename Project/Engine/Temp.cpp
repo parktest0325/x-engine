@@ -10,59 +10,55 @@
 #include "CConstBuffer.h"
 #include "CGraphicShader.h"
 
-// 물체의 위치, 크기, 회전
-tTransform g_Trans = {};
+#include "CGameObject.h"
+#include "CTransform.h"
+#include "CMeshRender.h"
+#include "CPlayerScript.h"
+
+CGameObject* pObject = nullptr;
+CGameObject* pObject2 = nullptr;
+
 
 int TempInit()
 {
+	pObject = new CGameObject;
+	pObject->AddComponent(new CTransform);
+	pObject->AddComponent(new CMeshRender);
+	pObject->AddComponent(new CPlayerScript);
 
+	pObject->Transform()->SetRelativeScale(Vec3(0.2f, 0.2f, 0.2f));
 
+	pObject->MeshRender()->SetMesh(CAssetMgr::GetInst()->FindAsset<CMesh>(L"CircleMesh"));
+	pObject->MeshRender()->SetShader(CAssetMgr::GetInst()->FindAsset<CGraphicShader>(L"Std2DShader"));
 
+	pObject2 = new CGameObject;
+	pObject2->AddComponent(new CTransform);
+	pObject2->AddComponent(new CMeshRender);
 
+	pObject2->Transform()->SetRelativeScale(Vec3(0.4f, 0.4f, 0.4f));
 
+	pObject2->MeshRender()->SetMesh(CAssetMgr::GetInst()->FindAsset<CMesh>(L"RectMesh"));
+	pObject2->MeshRender()->SetShader(CAssetMgr::GetInst()->FindAsset<CGraphicShader>(L"Std2DShader"));
 	return S_OK;
 }
 
 void TempRelease()
 {
+	delete pObject;
+	delete pObject2;
 }
 
 void TempTick()
 {
-	float DT = CTimeMgr::GetInst()->GetDeltaTime();
+	pObject->tick();
+	pObject2->tick();
 
-	if (KEY_PRESSED(KEY::W))
-	{
-		g_Trans.Position.y += DT;
-	}
-	if (KEY_PRESSED(KEY::S))
-	{
-		g_Trans.Position.y -= DT;
-	}
-	if (KEY_PRESSED(KEY::D))
-	{
-		g_Trans.Position.x += DT;
-	}
-	if (KEY_PRESSED(KEY::A))
-	{
-		g_Trans.Position.x -= DT;
-	}
-
-	// SystemMemory -> GPU Memory
-	CConstBuffer* pCB = CDevice::GetInst()->GetConstBuffer(CB_TYPE::TRANSFORM);
-	pCB->SetData(&g_Trans);
-	pCB->Binding();
+	pObject->finaltick();
+	pObject2->finaltick();
 }
 
 void TempRender()
 {
-	// 쉐이더 세팅
-	Ptr<CGraphicShader> pGS = CAssetMgr::GetInst()->FindAsset<CGraphicShader>(L"Std2DShader");
-	pGS->Binding();
-	// 뎁스스텐실스테이트,  블렌드스테이트 기본값 사용할것
-
-	// 메쉬 세팅
-	//g_RectMesh->render();
-	Ptr<CMesh> pRectMesh = CAssetMgr::GetInst()->FindAsset<CMesh>(L"RectMesh");
-	pRectMesh->render();
+	pObject->render();
+	pObject2->render();
 }
